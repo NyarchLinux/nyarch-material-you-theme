@@ -76,7 +76,6 @@ class Extension {
         } catch (e) {
             log(e);
         }
-
         // Commented out to avoid reloading the theme at every start
         // This should not be ported to normal material you extension
         // after enabling, to apply the theme you must change trigger 
@@ -85,7 +84,12 @@ class Extension {
     }
 
     disable() {
-        remove_theme();
+        // Don't remove theme on suspension
+        let lockingScreen = (Main.sessionMode.currentMode == "unlock-dialog"    // unlock-dialog == shield/curtain (before lock-screen w/ gdm)
+        || Main.sessionMode.currentMode == "lock-screen");
+        if (!lockingScreen) {
+            remove_theme();
+        }
         this._interfaceSettings = null;
         this._wallpaperSettings = null;
         this._prefsSettings = null;
