@@ -77,7 +77,11 @@ class Extension {
             log(e);
         }
 
-        apply_theme(base_presets, color_mappings);
+        // Commented out to avoid reloading the theme at every start
+        // This should not be ported to normal material you extension
+        // after enabling, to apply the theme you must change trigger 
+        // this function using settings before
+        //apply_theme(base_presets, color_mappings);
     }
 
     disable() {
