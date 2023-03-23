@@ -79,6 +79,7 @@ class Extension {
 
         try {
             let config_path = GLib.get_home_dir() + "/.config";
+            // Check if gtk theme is applied by material you
             let content = read_file(config_path + "/gtk-4.0/materialyou");
             if (content != "yes") {
                 apply_theme(base_presets, color_mappings);
@@ -101,7 +102,6 @@ class Extension {
         if (!lockingScreen) {
             remove_theme();
         }
-        log("porcoddiocane");
         this._interfaceSettings = null;
         this._wallpaperSettings = null;
         this._prefsSettings = null;
