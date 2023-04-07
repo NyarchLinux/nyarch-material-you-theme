@@ -64,6 +64,20 @@ Theming for native libadwaita will work by default.
 #### Flatpak
 Install [Flatseal](https://github.com/tchx84/Flatseal), and add `xdg-config/gtk-4.0:ro` to **Other Files** under the category **Filesystem** in the **All Applications** section.
 
+### Pywal Theming
+To enable Pywal theming pip3 must be installed, then click the install Pywal button in extension preferences. 
+
+If you are new to Pywal, check out the Pywal [wiki](https://github.com/dylanaraps/pywal/wiki). There are lots of things that Pywal integrates with such as [Vim](https://github.com/dylanaraps/wal.vim), [Neovim](https://github.com/AlphaTechnolog/pywal.nvim), [VSCode](https://github.com/dlasagno/vscode-wal-theme), [Zathura](https://github.com/GideonWolfe/Zathura-Pywal), and many more.
+
+Out of the box, Pywal will only temporarily change the colors of your terminal. As a first step you should include something like 
+
+```
+if [[ -f "$HOME/.cache/wal/sequences" ]]; then
+    (cat $HOME/.cache/wal/sequences)
+fi
+```
+to your `~/.bashrc` or `~/.zshrc`
+
 ### GTK3
 #### Native
 Install the [adw-gtk3](https://github.com/lassekongo83/adw-gtk3) theme and apply it.
