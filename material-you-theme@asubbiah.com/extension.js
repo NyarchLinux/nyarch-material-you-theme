@@ -138,7 +138,9 @@ function apply_theme(base_presets, color_mappings, notify=false) {
     const enable_pywal_theming = settings.get_boolean("enable-pywal-theming");
     let size = {height: height, width: width};
     if (accent_color_enabled) {
-        color_scheme = "Default";
+        if (color_scheme == "Fruit Salad" || color_scheme == "Expressive") {
+            color_scheme = "Default";
+        }
     }
     let color_mappings_sel = color_mappings[color_scheme.toLowerCase()];
 

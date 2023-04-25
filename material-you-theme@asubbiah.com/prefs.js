@@ -271,6 +271,7 @@ class ColorAccentGroup extends Adw.PreferencesGroup {
 
     _addAccentColorChooser() {
         // Create a row of buttons
+        this.buttons = [];
         const row = new Adw.ExpanderRow();
         var colors = new Gtk.Box();
         colors.set_spacing(4);
@@ -283,9 +284,13 @@ class ColorAccentGroup extends Adw.PreferencesGroup {
             var csss = new Gtk.CssProvider();
             // Make it circular and right color 
             csss.load_from_data("button { background-color: "+color.toString(16)+"; border-radius: 999px;}", -1);
+            if (this._settings.get_string("accent-color") == COLORS[color].toString(10)) {
+                button.set_icon_name("object-select-symbolic");
+            }
             button.get_style_context().add_provider(csss, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
-            button.connect("clicked", this._createClickHandler(color, this._settings));
+            button.connect("clicked", this._createClickHandler(color, button, colors, this._settings, this));
             colors.append(button);
+            this.buttons.push(button);
         }
         row.add_row(colors);
         this.add(row);
@@ -295,9 +300,14 @@ class ColorAccentGroup extends Adw.PreferencesGroup {
         const row = new MiscToggleRow(name, settings, title);
         this.add(row);
     }
-    _createClickHandler(color, settings) {
+    _createClickHandler(color, button, colors, settings, obj) {
         return function () {
             settings.set_string("accent-color", COLORS[color].toString(10));
+            obj.buttons.forEach(function (object) {
+                object.set_icon_name("");
+            });
+            button.set_icon_name("object-select-symbolic");
+
         }
     }
 }
@@ -308,14 +318,14 @@ function fillPreferencesWindow(window) {
         const sass_group = new SassGroup();
         page.add(sass_group);
     }
+    const color_accent_group = new ColorAccentGroup();
+    page.add(color_accent_group);
     const color_scheme_group = new ColorSchemeGroup();
     page.add(color_scheme_group);
     const misc_settings_group = new MiscGroup();
     page.add(misc_settings_group);
     const pywal_group = new PywalGroup();
     page.add(pywal_group);
-    const color_accent_group = new ColorAccentGroup();
-    page.add(color_accent_group);
     window.add(page);
 }
 
