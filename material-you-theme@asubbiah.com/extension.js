@@ -64,6 +64,12 @@ export default class MaterialYou extends Extension {
         this._prefsSettings.connect('changed::scheme', () => {
             this.apply_theme(base_presets, color_mappings, true);
         });
+        this._prefsSettings.connect('changed::accent-color', () => {
+            apply_theme(base_presets, color_mappings, true);
+        });
+        this._prefsSettings.connect('changed::enable-accent-colors', () => {
+            apply_theme(base_presets, color_mappings, true);
+        });
         try {
             this._shellSettings = this.getSettings(SHELL_SCHEMA);
             this._shellSettings.connect('changed::name', () => {
@@ -76,12 +82,31 @@ export default class MaterialYou extends Extension {
         } catch (e) {
             log(e);
         }
-
-        this.apply_theme(base_presets, color_mappings);
+        try {
+            let config_path = GLib.get_home_dir() + "/.config";
+            // Check if gtk theme is applied by material you
+            let content = this.read_file(config_path + "/gtk-4.0/materialyou");
+            if (content != "yes") {
+                this.apply_theme(base_presets, color_mappings);
+            }
+        } catch (e) {
+            this.apply_theme(base_presets, color_mappings);
+            log(e);
+        }
+        // Commented out to avoid reloading the theme at every start
+        // This should not be ported to normal material you extension
+        // after enabling, to apply the theme you must change trigger 
+        // this function using settings before
+        //apply_theme(base_presets, color_mappings);
     }
 
     disable() {
-        this.remove_theme();
+        // Don't remove theme on suspension
+        let lockingScreen = (Main.sessionMode.currentMode == "unlock-dialog"    // unlock-dialog == shield/curtain (before lock-screen w/ gdm)
+        || Main.sessionMode.currentMode == "lock-screen");
+        if (!lockingScreen) {
+            this.remove_theme();
+        }
         this._interfaceSettings = null;
         this._wallpaperSettings = null;
         this._prefsSettings = null;
@@ -102,12 +127,15 @@ export default class MaterialYou extends Extension {
             warn_shell_theme = true;
         }
         const color_scheme = settings.get_string("scheme");
+        const accent_color_enabled = settings.get_boolean("enable-accent-colors");
+        const accent_color = settings.get_string("accent-color");
         const show_notifications = settings.get_boolean("show-notifications");
         const height = settings.get_int("resize-height");
         const width = settings.get_int("resize-width");
         let size = {height: height, width: width};
         let color_mappings_sel = color_mappings[color_scheme.toLowerCase()];
-    
+        const enable_pywal_theming = settings.get_boolean("enable-pywal-theming");
+
         // Checking dark theme preference
         let is_dark = false;
         let interface_settings = new Gio.Settings({ schema: INTERFACE_SCHEMA });
@@ -127,7 +155,13 @@ export default class MaterialYou extends Extension {
             wall_path = Gio.File.new_for_uri(wall_path).get_path();
         }
         let pix_buf = GdkPixbuf.Pixbuf.new_from_file_at_size(wall_path, size.width, size.height);
-        let theme = theme_utils.themeFromImage(pix_buf);
+        let theme;
+        if (accent_color_enabled) {
+            theme = theme_utils.themeFromSourceColor(parseInt(accent_color), []);
+        } else {
+            theme = theme_utils.themeFromImage(pix_buf);
+        }
+
     
         // Configuring for light or dark theme
         let scheme = theme.schemes.light.props;
@@ -156,7 +190,9 @@ export default class MaterialYou extends Extension {
                 css += "@define-color " + prefix_key + key_2 + " " + base_preset.palette[prefix_key][key_2] + ";\n"
             }
         }
-    
+        if (enable_pywal_theming) {
+          this.run_pywal(base_preset.variables["window_bg_color"], wall_path, is_dark)
+        }
         let config_path = GLib.get_home_dir() + "/.config";
         this.create_dir(config_path + "/gtk-4.0");
         this.create_dir(config_path + "/gtk-3.0");
@@ -290,8 +326,7 @@ export default class MaterialYou extends Extension {
         const file = Gio.File.new_for_path(path);
         const [, etag] = file.replace_contents(str, null, false,
         Gio.FileCreateFlags.REPLACE_DESTINATION, null);
-    }
-    
+    }    
     read_file(path) {
         const file = Gio.File.new_for_path(path);
         const [, contents, etag] = file.load_contents(null);
@@ -345,7 +380,23 @@ export default class MaterialYou extends Extension {
             logError(e);
         }
     }
-    
+    run_pywal(background, image, is_dark) {
+      try {
+          if (is_dark) {
+              Gio.Subprocess.new(
+                  ['/usr/bin/wal', '-b', background, '-i', image, '-nqe'],
+                  Gio.SubprocessFlags.NONE
+              );
+          } else {
+              Gio.Subprocess.new(
+                  ['/usr/bin/wal', '-b', background, '-i', image, '-nqel'],
+                  Gio.SubprocessFlags.NONE
+              );
+          }
+      } catch (e) {
+          logError(e);
+      }
+    } 
     map_colors(color_mapping, base_preset, scheme) {
         let rgba_str;
         for (const key in color_mapping) {
