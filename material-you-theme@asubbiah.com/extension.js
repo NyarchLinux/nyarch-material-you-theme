@@ -65,10 +65,10 @@ export default class MaterialYou extends Extension {
             this.apply_theme(base_presets, color_mappings, true);
         });
         this._prefsSettings.connect('changed::accent-color', () => {
-            apply_theme(base_presets, color_mappings, true);
+            this.apply_theme(base_presets, color_mappings, true);
         });
         this._prefsSettings.connect('changed::enable-accent-colors', () => {
-            apply_theme(base_presets, color_mappings, true);
+            this.apply_theme(base_presets, color_mappings, true);
         });
         try {
             this._shellSettings = this.getSettings(SHELL_SCHEMA);
