@@ -1,3 +1,7 @@
+# Not maintained anymore
+Nyarch Material You theme will not updated anymore since I now maintain new Material You extension.
+The extension to refer to is now: [Material You Colors](https://github.com/FrancescoCaracciolo/material-you-colors)
+
 # Material You Color Theming
 Applies generated libadwaita theme from wallpaper using Material You
 
